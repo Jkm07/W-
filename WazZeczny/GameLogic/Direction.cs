@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using WazZeczny.Interface;
 
 namespace WazZeczny
 {
-    public class Direction
+    public class Direction: IPrototype
     {
         public readonly static Direction Left = new Direction(0, -1);
         public readonly static Direction Right = new Direction(0, 1);
@@ -33,6 +34,11 @@ namespace WazZeczny
         public override int GetHashCode()
         {
             return HashCode.Combine(RowOffset, ColOffset);
+        }
+
+        public IPrototype Copy()
+        {
+            return new Direction(RowOffset, ColOffset);
         }
 
         public static bool operator ==(Direction left, Direction right)

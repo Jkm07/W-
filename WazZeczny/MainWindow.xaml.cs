@@ -1,60 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Media.Media3D;
+using WazZeczny.GameLogic;
+using WazZeczny.Interface;
+using WazZeczny.States;
 
 namespace WazZeczny
 {
     public partial class MainWindow : Window
     {
-        private readonly Dictionary<GridValue, ImageSource> gridValToImage = new()
+        private readonly Dictionary<GridImage, ImageSource> gridValToImage = new()
         {
-            {GridValue.Empty, Images.Empty},
-            {GridValue.Snake, Images.Body},
-            {GridValue.Food, Images.Food},
+            {GridImage.Empty, Images.Empty},
+            {GridImage.Snake, Images.Body},
+            {GridImage.Food, Images.Food},
+            {GridImage.SnakeHead, Images.Head},
         };
 
-        private readonly Dictionary<Direction, int> dirToRotation = new()
-        {
-            {Direction.Up, 0},
-            {Direction.Right, 90},
-            {Direction.Down, 180},
-            {Direction.Left, 270}
-        };
-
-        private readonly int rows = 15, cols = 30;
+        private int rows = 15, cols = 30;
         private readonly Image[,] gridImages;
         private GameState gameState;
         private bool gameRunning;
+        private State state;
+        private GameStateBuilder builder;
 
         private async Task RunGame()
         {
+            gameState = new GameState(rows, cols);
             Draw();
             await ShowCountDown();
             Overlay.Visibility = Visibility.Hidden;
+            state = new GameRunning(gameState, builder);
             await GameLoop();
             await ShowGameOver();
-            gameState = new GameState(rows, cols);
         }
 
         private async void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (Overlay.Visibility == Visibility.Visible)
-            {
-                e.Handled = true;
-            }
-
-            if(!gameRunning)
+            if(!gameRunning && e.Key == Key.Space)
             {
                 gameRunning = true;
                 await RunGame();
@@ -64,32 +52,15 @@ namespace WazZeczny
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if(gameState.GameOver)
-            {
-                return;
-            }
 
-            switch (e.Key)
-            {
-                case Key.Left:
-                    gameState.ChangeDirection(Direction.Left);
-                    break;
-                case Key.Right:
-                    gameState.ChangeDirection(Direction.Right);
-                    break;
-                case Key.Up:
-                    gameState.ChangeDirection(Direction.Up);
-                    break;
-                case Key.Down:
-                    gameState.ChangeDirection(Direction.Down);
-                    break;
-            }
+            state = state.Handle(e);
         }
 
         private async Task GameLoop()
         {
-            while(!gameState.GameOver)
+            while(!gameState.snake.GameOver)
             {
+                gameState.snake.Save();
                 await Task.Delay(100);
                 gameState.Move();
                 Draw();
@@ -99,7 +70,10 @@ namespace WazZeczny
         {
             InitializeComponent();
             gridImages = SetupGrid();
-            gameState = new GameState(rows, cols);
+            //gameState = new GameState(rows, cols);
+            builder = new GameStateBuilder();
+            state = new Start(null, builder);
+            new GUIProxy(this);
         }
 
         private Image[,] SetupGrid()
@@ -126,46 +100,25 @@ namespace WazZeczny
             return images;
         }
 
-        private void Draw()
+        public void Draw()
         {
             DrawGrid();
-            DrawSnakeHead();
-            ScoreText.Text = $"PUNKTY: {gameState.Score}";
+            ScoreText.Text = $"PUNKTY: {gameState.snake.Score}";
         }
 
         private void DrawGrid()
         {
-            for(int r = 0; r < rows; r++)
+            int r = 0;
+            int c = 0;
+            foreach(var i in gameState.Board)
             {
-                for(int c = 0; c < cols; c++)
+                gridImages[r, c].Source = gridValToImage[i.Type];
+                gridImages[r, c].RenderTransform = new RotateTransform(i.Rotation);
+                if(++c == cols)
                 {
-                    GridValue gridVal = gameState.Grid[r, c];
-                    gridImages[r, c].Source = gridValToImage[gridVal];
-                    gridImages[r, c].RenderTransform = Transform.Identity;
+                    c = 0;
+                    ++r;
                 }
-            }
-        }
-
-        private void DrawSnakeHead()
-        {
-            Position headPos = gameState.HeadPosition();
-            Image image = gridImages[headPos.Row, headPos.Col];
-            image.Source = Images.Head;
-
-            int rotation = dirToRotation[gameState.Dir];
-            image.RenderTransform = new RotateTransform(rotation);
-        }
-
-        private async Task DrawDeadSnake()
-        {
-            List<Position> positions = new List<Position>(gameState.SnakePositions());
-
-            for(int i = 0; i < positions.Count; i++)
-            {
-                Position pos = positions[i];
-                ImageSource source = (i == 0) ? Images.DeadHead : Images.DeadBody;
-                gridImages[pos.Row, pos.Col].Source= source;
-                await Task.Delay(50);
             }
         }
 
@@ -180,10 +133,55 @@ namespace WazZeczny
 
         private async Task ShowGameOver()
         {
-            await DrawDeadSnake();
+            //await DrawDeadSnake();
             await Task.Delay(1000);
             Overlay.Visibility = Visibility.Visible;
             OverlatText.Text = "NACIŚNIJ PRZYCISK";
+        }
+
+        public void ChangeTextOfSnake1(string text)
+        {
+            Snake1Opt.Text = text;
+        }
+
+        public void ChangeTextOfSnake2(string text)
+        {
+            Snake2Opt.Text = text;
+        }
+
+        public void ChangeTextOfSnake3(string text)
+        {
+            Snake3Opt.Text = text;
+        }
+
+        public void SetActiveSnake1()
+        {
+            Snake1Opt.Foreground = new SolidColorBrush(Colors.Red);
+        }
+
+        public void SetActiveSnake2()
+        {
+            Snake2Opt.Foreground = new SolidColorBrush(Colors.Red);
+        }
+
+        public void SetActiveSnake3()
+        {
+            Snake3Opt.Foreground = new SolidColorBrush(Colors.Red);
+        }
+
+        public void SetUnactiveSnake1()
+        {
+            Snake1Opt.Foreground = new SolidColorBrush(Colors.White);
+        }
+
+        public void SetUnactiveSnake2()
+        {
+            Snake2Opt.Foreground = new SolidColorBrush(Colors.White);
+        }
+
+        public void SetUnactiveSnake3()
+        {
+            Snake3Opt.Foreground = new SolidColorBrush(Colors.White);
         }
     }
 }

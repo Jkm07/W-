@@ -1,10 +1,11 @@
 ﻿
 namespace WazZeczny
 {
-    public enum GridValue
+    public enum GridImage
     {
         Empty,
         Snake,
+        SnakeHead,
         Food,
         Outside
     }

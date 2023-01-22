@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using WazZeczny.Interface;
 
 namespace WazZeczny
 {
-    public class Position
+    public class Position : IPrototype
     {
         public int Row { get; }
         public int Col { get; }
@@ -25,6 +26,11 @@ namespace WazZeczny
         public override int GetHashCode()
         {
             return HashCode.Combine(Row, Col);
+        }
+
+        public IPrototype Copy()
+        {
+            return new Position(Row, Col);
         }
 
         public static bool operator ==(Position left, Position right)
