@@ -31,7 +31,7 @@ namespace WazZeczny
 
         private async Task RunGame()
         {
-            gameState = new GameState(rows, cols);
+            gameState = builder.Build();
             Draw();
             await ShowCountDown();
             Overlay.Visibility = Visibility.Hidden;
@@ -58,9 +58,9 @@ namespace WazZeczny
 
         private async Task GameLoop()
         {
-            while(!gameState.snake.GameOver)
+            while(!gameState.GameOver())
             {
-                gameState.snake.Save();
+                gameState.SaveAllSnake();
                 await Task.Delay(100);
                 gameState.Move();
                 Draw();
@@ -70,7 +70,6 @@ namespace WazZeczny
         {
             InitializeComponent();
             gridImages = SetupGrid();
-            //gameState = new GameState(rows, cols);
             builder = new GameStateBuilder();
             state = new Start(null, builder);
             new GUIProxy(this);
@@ -103,7 +102,7 @@ namespace WazZeczny
         public void Draw()
         {
             DrawGrid();
-            ScoreText.Text = $"PUNKTY: {gameState.snake.Score}";
+            ScoreText.Text = $"PUNKTY: {gameState.snakes[0].Score}";
         }
 
         private void DrawGrid()

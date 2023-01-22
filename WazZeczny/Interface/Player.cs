@@ -17,7 +17,7 @@ namespace WazZeczny.Interface
 
         public virtual void Add(Position start)
         {
-            int r = start.Row / 2;
+            int r = start.Row;
 
             for (int c = start.Col; c <= 3; c++)
             {

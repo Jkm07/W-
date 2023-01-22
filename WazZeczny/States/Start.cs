@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using WazZeczny.GameLogic;
 using WazZeczny.Interface;
-using WazZeczny.States;
+using WazZeczny.Commands;
 
 namespace WazZeczny.States
 {
@@ -14,6 +14,8 @@ namespace WazZeczny.States
     {
         public Start(GameState gameState, GameStateBuilder gameBuilder) : base(gameState, gameBuilder)
         {
+            KEY_UP = new GoToOptionSnake3();
+            KEY_DOWN = new GoToOptionSnake3();
         }
 
         public override State Handle(KeyEventArgs e)
@@ -22,10 +24,10 @@ namespace WazZeczny.States
             switch (e.Key)
             {
                 case Key.Up:
-                    GUIProxy.SwitchSnake3();
+                    KEY_UP.Execute();
                     return new Snake3Set(_gameState, _gameBuilder);
                 case Key.Down:
-                    GUIProxy.SwitchSnake1();
+                    KEY_DOWN.Execute();
                     return new Snake1Set(_gameState, _gameBuilder);
                 case Key.Space:
                     return new GameRunning(_gameState, _gameBuilder);
