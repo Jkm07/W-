@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 
 namespace WazZeczny.GameLogic
 {
@@ -56,6 +57,20 @@ namespace WazZeczny.GameLogic
             for (int r = 0; r < Rows; r++)
                 for (int c = 0; c < Cols; c++)
                     yield return Grid[r, c];
+        }
+
+        private bool OutsideGrid(Position pos)
+        {
+            return pos.Row < 0 || pos.Col < 0 || pos.Row >= Rows || pos.Col >= Cols;
+        }
+
+        public GridImage WillHit(Position newHeadPos)
+        {
+            if (OutsideGrid(newHeadPos))
+            {
+                return GridImage.Outside;
+            }
+            return Grid[newHeadPos.Row, newHeadPos.Col].Type;
         }
     }
 }

@@ -18,16 +18,6 @@ namespace WazZeczny.GameLogic
             {Direction.Left, 270}
         };
 
-        private Position HeadPosition()
-        {
-            return body.First.Value;
-        }
-
-        private Position TailPosition()
-        {
-            return body.Last.Value;
-        }
-
         private void AddHead(Position pos)
         {
             body.AddFirst(pos);
@@ -71,7 +61,7 @@ namespace WazZeczny.GameLogic
             grid[head.Row, head.Col] = new GridValue(GridImage.SnakeHead, dirToRotation[Dir]);
         }
 
-        public void ChangeDirection(Direction dir)
+        public override void ChangeDirection(Direction dir)
         {
             if (CanChangeDirection(dir))
             {
@@ -97,11 +87,6 @@ namespace WazZeczny.GameLogic
                 return Dir;
             }
             return dirChanges.Last.Value;
-        }
-
-        public Position GetNextPosition()
-        {
-            return HeadPosition().Translate(Dir);
         }
 
         public override IPrototype Copy()

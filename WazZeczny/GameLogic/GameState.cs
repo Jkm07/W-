@@ -15,6 +15,12 @@ namespace WazZeczny
 
         public readonly Food food = new Food();
 
+        private delegate void Notify();
+
+        private event Notify _saveSnakes;
+
+        private event Notify _RunAI;
+
         public GameState(int rows, int cols, List<Snake> snakes, FacotryContainer factory)
         {
             this.Factory = factory;
@@ -23,6 +29,7 @@ namespace WazZeczny
             this.snakes = snakes;
             food.Add(new Position(Board.Rows / 2, 2));
             food.Move(null, null);
+            snakes.ForEach(snake => { _saveSnakes += snake.Save; _RunAI += snake.AI.Execute; });
         }
 
         private void AddSnakes(List<Snake> snakes)
@@ -39,7 +46,12 @@ namespace WazZeczny
 
         public void SaveAllSnake()
         {
-            snakes.ForEach(snake => { snake.Save(); });
+            _saveSnakes?.Invoke();
+        }
+
+        public void RunAllAI()
+        {
+            _RunAI?.Invoke();
         }
 
         private void Move(Snake snake)
@@ -49,7 +61,7 @@ namespace WazZeczny
                 return;
             }
             Position newHeadPos = snake.GetNextPosition();
-            GridImage hit = WillHit(newHeadPos);
+            GridImage hit = Board.WillHit(newHeadPos);
             if (hit == GridImage.Outside || hit == GridImage.Snake)
             {
                 snake.GameOver = true;
@@ -72,20 +84,6 @@ namespace WazZeczny
             bool gameOver = true;
             snakes.ForEach(snake => { gameOver &= snake.GameOver; });
             return gameOver;
-        }
-
-        private bool OutsideGrid(Position pos)
-        {
-            return pos.Row < 0 || pos.Col < 0 || pos.Row >= Board.Rows || pos.Col >= Board.Cols; 
-        }
-
-        private GridImage WillHit(Position newHeadPos)
-        {
-            if(OutsideGrid(newHeadPos))
-            {
-                return GridImage.Outside;
-            }
-            return Board.Grid[newHeadPos.Row, newHeadPos.Col].Type;
         }
     }
 }

@@ -61,6 +61,7 @@ namespace WazZeczny
             while(!gameState.GameOver())
             {
                 gameState.SaveAllSnake();
+                gameState.RunAllAI();
                 await Task.Delay(100);
                 gameState.Move();
                 Draw();

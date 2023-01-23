@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 using WazZeczny.Enum;
 using WazZeczny.Factories;
 using WazZeczny.Interface;
+using WazZeczny.StrategiesAI;
 
 namespace WazZeczny.GameLogic
 {
     public class GameStateBuilder
     {
-        const int SnakeOptionSize = 3;
+        const int SnakeOptionSize = 4;
 
         private int rows = 15, cols = 30;
 
@@ -40,17 +41,53 @@ namespace WazZeczny.GameLogic
                 snakes.Add(snake);
                 snake1 = new SnakeChangeDirFactory(snake);
             }
+            else if(Snake1 == SnakeControllType.BOT_C)
+            {
+                var snake = new Snake();
+                snake.AI = new CircleAI(snake);
+                snakes.Add(snake);
+            }
+            else if (Snake1 == SnakeControllType.BOT_S)
+            {
+                var snake = new Snake();
+                snake.AI = new StandardAI(snake);
+                snakes.Add(snake);
+            }
             if (Snake2 == SnakeControllType.USER)
             {
                 var snake = new Snake();
                 snakes.Add(snake);
                 snake2 = new SnakeChangeDirFactory(snake);
             }
+            else if (Snake2 == SnakeControllType.BOT_C)
+            {
+                var snake = new Snake();
+                snake.AI = new CircleAI(snake);
+                snakes.Add(snake);
+            }
+            else if (Snake2 == SnakeControllType.BOT_S)
+            {
+                var snake = new Snake();
+                snake.AI = new StandardAI(snake);
+                snakes.Add(snake);
+            }
             if (Snake3 == SnakeControllType.USER)
             {
                 var snake = new Snake();
                 snakes.Add(snake);
                 snake3 = new SnakeChangeDirFactory(snake);
+            }
+            else if (Snake3 == SnakeControllType.BOT_C)
+            {
+                var snake = new Snake();
+                snake.AI = new CircleAI(snake);
+                snakes.Add(snake);
+            }
+            else if (Snake3 == SnakeControllType.BOT_S)
+            {
+                var snake = new Snake();
+                snake.AI = new StandardAI(snake);
+                snakes.Add(snake);
             }
             return new GameState(rows, cols, snakes, new FacotryContainer(snake1, snake2, snake3));
         }

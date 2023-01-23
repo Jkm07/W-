@@ -9,7 +9,8 @@ namespace WazZeczny.Enum
     public enum SnakeControllType
     {
         OFF,
-        BOT,
+        BOT_C,
+        BOT_S,
         USER
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using WazZeczny.Commands;
 using WazZeczny.GameLogic;
+using WazZeczny.StrategiesAI;
 
 namespace WazZeczny.Interface
 {
@@ -10,10 +12,17 @@ namespace WazZeczny.Interface
         public Direction Dir { get; set; }
         public int Score { get; protected set; }
         public bool GameOver { get; set; }
+        public StrategyAI AI { get; set; }
 
         protected LinkedList<Position> body = new LinkedList<Position>();
         protected readonly LinkedList<Direction> dirChanges = new LinkedList<Direction>();
         private readonly CareTaker careTaker = new CareTaker();
+
+
+        protected Player() 
+        {
+            AI = new DoNothingAI(this);
+        }
 
         public virtual void Add(Position start)
         {
@@ -70,6 +79,23 @@ namespace WazZeczny.Interface
                 times--;
             }
         }
+
+        public Position HeadPosition()
+        {
+            return body.First.Value;
+        }
+
+        protected Position TailPosition()
+        {
+            return body.Last.Value;
+        }
+
+        public Position GetNextPosition()
+        {
+            return HeadPosition().Translate(Dir);
+        }
+
+        public virtual void ChangeDirection(Direction dir) { }
 
         public abstract IPrototype Copy();
     }
